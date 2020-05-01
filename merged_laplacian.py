@@ -1,30 +1,26 @@
 import scipy.integrate as integrate
 import numpy as np
+from math import inf
 
 '''
-Given a list of break points c, and a list of privacy parameters epsilon and delta, return the probability density 
+Given a list of break points c, and a list of privacy parameters epsilon and global_sensitivity, return the probability density 
 function that merges the two distribution. Errors are raised when the lengths of the three lists do not match 
 accordingly. Currently the function only handles merging less than three laplace distribution. 
 '''
-def merged_laplace(epsilon, delta, c):
+def merged_laplace(epsilon, global_sensitivity, c):
     # Check for list size
-    if len(epsilon) != len(delta):
-        raise RuntimeError('Epsilon list size and delta list size are different.')
     if len(c) > len(epsilon) - 1:
         raise RuntimeError('Too many break points.')
     if len(c) < len(epsilon) - 1:
         raise RuntimeError('Not enough break points.')
 
-    lam = [delta[i] / epsilon[i] for i in range(len(epsilon))]
+    lam = [(global_sensitivity / epsilon[i]) for i in range(len(epsilon))]
     c.sort()
 
     # pdf for merging different number of laplace distributioin
     def laplace(x):
         lambda1 = lam[0]
-        if x < 0:
-            return 1 / (2 * lambda1) * np.exp(x / lambda1)
-        else:
-            return 1 / (2 * lambda1) * np.exp(-x / lambda1)
+        return 1/(2 * lambda1) * np.exp(-abs(x) / lambda1)
 
     def merge_two(x):
         lambda1, lambda2 = lam
@@ -33,7 +29,7 @@ def merged_laplace(epsilon, delta, c):
         a2 = np.exp((c1 / lambda2) - c1 / lambda1) / (
                 2 * (lambda1 + (lambda2 * np.exp(-c1 / lambda1)) - (lambda1 * np.exp(-c1 / lambda1))))
         if x < -c1:
-            return a2 * np.exp(x/lambda2)
+            return a2 * np.exp(x / lambda2)
 
         elif x < 0:
             return a1 * np.exp(x / lambda1)
@@ -77,16 +73,38 @@ def merged_laplace(epsilon, delta, c):
 
 
 '''
-Given a list of break points c, and a list of privacy parameters epsilon and delta, return the L1 cost for the 
+Given a list of break points c, and a list of privacy parameters epsilon and global_sensitivity, return the L1 cost for the 
 merged laplacian mechanism.
 '''
-def merged_laplace_L1_eval(epsilon, delta, c):
-    return integrate.quad(lambda x: abs(x) * merged_laplace(epsilon, delta, c)(x))[0]
-
+def merged_laplace_L1_eval(epsilon, global_sensitivity, c):
+    return integrate.quad(lambda x: abs(x) * merged_laplace(epsilon, global_sensitivity, c)(x), -inf, inf)[0]
 
 '''
-Given a list of break points c, and a list of privacy parameters epsilon and delta, return the L2 cost for the 
+Given a list of break points c, and a list of privacy parameters epsilon and global_sensitivity, return the L2 cost for the 
 merged laplacian mechanism.
 '''
-def merged_laplace_L1_eval(epsilon, delta, c):
-    return integrate.quad(lambda x: x**2 * merged_laplace(epsilon, delta, c)(x))[0]
+def merged_laplace_L2_eval(epsilon, global_sensitivity, c):
+    return integrate.quad(lambda x: x**2 * merged_laplace(epsilon, global_sensitivity, c)(x), -inf, inf)[0]
+
+# Example for getting resutls for merged laplacian
+def merged_two_laplacian_example():
+    # for regular laplacian 
+    epsilons = [1e-4] # change here for different epsilon values
+    global_sensitivity = 1 # changee here for different global sensitivity values
+    break_points = [] # change here for different break points
+    L1_cost_laplace = merged_laplace_L1_eval(epsilons, global_sensitivity, break_points)
+    L2_cost_laplace = merged_laplace_L2_eval(epsilons, global_sensitivity, break_points)
+
+    # for merging two laplacian 
+    epsilons = [1e-4, 1e-5] # change here for different epsilon values
+    global_sensitivity = 1 # changee here for different global sensitivity values
+    break_points = [3] # change here for different break points
+    L1_cost_two_laplace = merged_laplace_L1_eval(epsilons, global_sensitivity, break_points)
+    L2_cost_two_laplace = merged_laplace_L2_eval(epsilons, global_sensitivity, break_points)
+
+    # for merging three laplacian 
+    epsilons = [1e-4, 1e-5, 1e-6] # change here for different epsilon values
+    global_sensitivity = 1 # changee here for different global sensitivity values
+    break_points = [3, 5] # change here for different break points
+    L1_cost_three_laplace = merged_laplace_L1_eval(epsilons, global_sensitivity, break_points)
+    L2_cost_three_laplace = merged_laplace_L2_eval(epsilons, global_sensitivity, break_points)

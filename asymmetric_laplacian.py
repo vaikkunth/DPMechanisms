@@ -32,11 +32,10 @@ def asymmetric_laplace_L2_eval(epsilon, global_sensitivity, k):
 
 # Example for getting resutls for asymmetric laplacian
 def asymmetric_laplacian_example():
-	epsilons = list(np.arange(1e-4, 1e-3, 1e-4)) # change here for different epsilon values
-	global_sensitivity = 1 # changee here for different global sensitivity values
-	ks = list(np.arange(2, 3, 1)) # change here for different scale parameter values
-	print(['epsilon', 'global sensitivity', 'scale parameter(k)', 'L_1 cost', 'L_2 cost'])
-	for epsilon in epsilons:
-		for k in ks: 	
-			print([epsilon, global_sensitivity, k, asymmetric_laplace_L1_eval(epsilon, global_sensitivity, k), asymmetric_laplace_L2_eval(epsilon, global_sensitivity, k)])
+    epsilon = 1e-4 # change here for different epsilon values
+    global_sensitivity = 1 # changee here for different global sensitivity values
+    k = 3 # change here for different scale parameter values
+    L1_cost = asymmetric_laplace_L1_eval(epsilon, global_sensitivity, k)
+    L2_cost = asymmetric_laplace_L2_eval(epsilon, global_sensitivity, k)
 
+asymmetric_laplacian_example()

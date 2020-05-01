@@ -41,13 +41,9 @@ def truncated_laplace_L2_eval(epsilon, global_sensitivity, A, B):
 
 # Example for getting resutls for truncated laplacian
 def truncated_laplacian_example(): 
-    epsilons = list(np.arange(1e-4, 1e-3, 1e-4)) # change here for different epsilon values
+    epsilon = 1e-4 # change here for different epsilon values
     global_sensitivity = 1 # change here for different global sensitivity
-    A = list(np.arange(-10, 10, 2)) # change here for different left truncation values
-    print(['epsilon', 'global sensitivity', 'left truncation', 'right truncation' 'L_1 cost', 'L_2 cost'])
-    for i in range(min(len(epsilons), len(A))):
-        a, b = process(epsilons[i], global_sensitivity, A[i], -A[i]) # It is necessary to call process function to get the appropriate values
-        print([epsilons[i], global_sensitivity, a, b, truncated_laplace_L1_eval(epsilons[i], global_sensitivity, a, b), truncated_laplace_L2_eval(epsilons[i], global_sensitivity, a, b)])
-
-truncated_laplacian_example()
-
+    A = -10 # change here for different left truncation values
+    a, b = process(epsilon, global_sensitivity, A, -A) # It is necessary to call process function to get the appropriate bounds
+    L1_cost = truncated_laplace_L1_eval(epsilon, global_sensitivity, a, b)
+    L2_cost = truncated_laplace_L2_eval(epsilon, global_sensitivity, a, b)
